@@ -36,7 +36,7 @@ export const Form = styled.form`
   }
 `
 
-export const Avatar = styled.div`
+export const Photo = styled.div`
   position: relative;
   margin: -124px auto 32px;
 
