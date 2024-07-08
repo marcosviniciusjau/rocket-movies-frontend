@@ -1,9 +1,15 @@
-import { Container, Content } from './styles'
+import { useNavigate } from 'react'
 
-import { Note } from '../../components/Note'
+import { Container, Content } from './styles'
+import { Movie } from '../../components/Movie'
 import { Header } from '../../components/Header'
 import { SectionHome } from '../../components/SectionHome'
 export function Home() {
+  const navigate = useNavigate()
+ 
+  function handleDetails(id){
+    navigate(`/details/${id}`)
+  }
   return (
     <Container>
     
@@ -11,16 +17,16 @@ export function Home() {
 
       <Content>
         <SectionHome title="Meus filmes">
+          {
+            movies.map(movie=>(
+              <Movie 
+                key={String(movie.id)}
+                data={movie}
+                onClick={() => handleDetails(movie.id)}
+              />
+            ))
   
-          <Note data={{
-            title: 'Interstelar',
-            description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto cupiditate at reiciendis odio suscipit voluptatum delectus libero quaerat mollitia autem, natus obcaecati non possimus. Molestiae dicta explicabo magnam soluta nobis',
-            tags: [
-              { id: '1', name: 'Interstelar'},
-              { id: '2', name: 'rocketseat' }
-            ]
-          }}
-          />
+          }
         </SectionHome>
    </Content>
     </Container>
