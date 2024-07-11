@@ -1,16 +1,17 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
+import { api } from '../../services/api'
 
 import { Textarea } from '../../components/Textarea'
 import { MovieItem } from '../../components/MovieItem'
 import { Section } from '../../components/Section'
 import { Button } from '../../components/Button'
+import { ButtonText } from '../../components/ButtonText'
 import { Header } from '../../components/Header'
 import { Input } from '../../components/Input'
 
 import { Container, Form } from './styles'
 import { FiArrowLeft } from 'react-icons/fi'
-import { api } from '../../services/api'
 export function New() {
   const [title,setTitle] = useState('')
   const [rating,setRating] = useState('')
@@ -32,7 +33,7 @@ export function New() {
     ))
   }
 
-  async function handleNewMovie() {
+   async function handleNewMovie() {
     try {
       if(!title || !rating) {
         return alert('Preencha todos os campos!')
@@ -40,15 +41,17 @@ export function New() {
       if(newTag){
         return alert('Você deixou um campo vazio. Clique em Adicionar para adicionar sua tag')
       }
-      const movie = {
+      await api.post('/movies', {
         title,
         description,
+        rating,
         tags
-      }
-      await api.post('/movies', movie)
+       }
+        
+      )
 
       alert('Filme criado com sucesso!')
-      navigate('/')
+      navigate(-1)
     } catch (error) {
       if(error.response) {
         alert(error.response.data.message)
@@ -57,13 +60,24 @@ export function New() {
       }
     }
  
+  }  
+
+  function handleBack() {
+    navigate(-1)
+  }
+
+  async function handleRemoveMovie() {
+    setTitle('')
+    setRating('')
+    setDescription('')
+    setTags([])
   }
   return (
     <Container>
       <Header />
 
       <main>
-        <Form>  
+        <Form>
           <Link to="/">
             <FiArrowLeft />
             Voltar
@@ -82,6 +96,7 @@ export function New() {
           <Input 
             placeholder="Sua nota (de 0 a 5)"  
             value={rating} 
+            type="number"
             onChange={(e) => setRating(e.target.value)} />
           </div>
           <Textarea 
@@ -111,7 +126,7 @@ export function New() {
           </Section>
 
           <div className="buttons">
-            <Button title="Excluir filme" />
+            <Button title="Excluir filme" onClick={handleRemoveMovie}/>
             <Button title="Salvar alterações" onClick={handleNewMovie}/>
           </div>
         </Form>

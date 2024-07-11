@@ -1,89 +1,106 @@
-import { createContext, useContext, useState, useEffect } from "react"
-import { api } from "../services/api"
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect
+} from 'react';
 
-export const AuthContext = createContext({})
+const AuthContext = createContext({});
+
+import { api } from "../services/api";
 
 function AuthProvider({ children }) {
-  const [data, setData] = useState({})
+  const [data, setData] = useState({});
+
   async function signIn({ email, password }) {
     try {
-      const response = await api.post("/sessions",{ email, password })
-      const { user, token } = response.data
+      const response = await api.post("sessions", { email, password });
+      const { token, user } = response.data;
 
-      localStorage.setItem("@rocket_movies:user", JSON.stringify(user))
-      localStorage.setItem("@rocket_movies:token", token)
+      localStorage.setItem("@rocket_movies:user", JSON.stringify(user));
+      localStorage.setItem("@rocket_movies:token", token);
 
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      setData({ user, token })
+      api.defaults.headers.authorization = `Bearer ${token}`;
+
+      setData({ token, user });
+
     } catch (error) {
-      if(error.response){
-        alert(error.response.data.message)
+      if (error.response) {
+        alert(error.response.data.message);
       } else {
-        alert("Não foi possível entrar")
+        alert("Não foi possível entrar.");
+      }
+    }
+  }
+
+  async function updatedProfile({ user, photoFile }) {
+    try {
+
+      if (photoFile) {
+        const fileUploadForm = new FormData();
+        fileUploadForm.append("photo", photoFile);
+
+        const response = await api.patch("/users/photo", fileUploadForm);
+        user.photo = response.data.photo;
+      }
+
+      await api.put("/users", user);
+
+      localStorage.setItem("@rocket_movies:user", JSON.stringify(user));
+
+      setData({
+        token: data.token,
+        user,
+      });
+
+      alert("Perfil atualizado!");
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert("Não foi possível atualizar o perfil.");
       }
     }
   }
 
   function signOut() {
-    localStorage.removeItem("@rocket_movies:token")
-    localStorage.removeItem("@rocket_movies:user")
-    setData({})
+    localStorage.removeItem("@rocket_movies:token");
+    localStorage.removeItem("@rocket_movies:user");
+
+    setData({});
   }
 
-  async function updateUser({user, photoUrl}) {
-    try {
-      if(photoUrl){
-        const fileUploadForm = new FormData()
-        fileUploadForm.append("photo", photoUrl)
-
-        const response = await api.patch('/users/photo', fileUploadForm)
-        user.photo = response.data.photo
-      }
-       await api.put('/users', user)  
-       localStorage.setItem("@rocket_movies:user", JSON.stringify(user))
-       setData({user, token: data.token})
-       alert("Perfil atualizado")
-     
-    } catch (error) {
-      if(error.response){
-        alert(error.response.data.message)
-      } else {
-        alert("Não foi possível atualizar")
-      }
-    }
-  }
 
   useEffect(() => {
-    const token = localStorage.getItem("@rocket_movies:token")
-    const user = localStorage.getItem("@rocket_movies:user")
+    const token = localStorage.getItem("@rocket_movies:token");
+    const user = localStorage.getItem("@rocket_movies:user");
 
     if (token && user) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.authorization = `Bearer ${token}`;
 
       setData({
         token,
-        user: JSON.parse(user),
-      })
+        user: JSON.parse(user)
+      });
     }
-  }, [])
+  }, []);
 
   return (
-    <AuthContext.Provider value=
-    {{ 
+    <AuthContext.Provider value={{
       signIn,
       signOut,
-      updateUser,
-      user: data.user 
-      }}>
+      updatedProfile,
+      user: data.user
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
 function useAuth() {
-  const context = useContext(AuthContext)
-  return context
+  const context = useContext(AuthContext);
+
+  return context;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export { AuthProvider, useAuth }
+export { AuthProvider, useAuth };

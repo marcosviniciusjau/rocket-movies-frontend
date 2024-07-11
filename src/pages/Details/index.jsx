@@ -1,5 +1,12 @@
+import { useState, useEffect } from 'react'
 import { Container, Content, Profile, Title } from './styles'
 
+import { useParams } from 'react-router-dom'
+import { api } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
+import ptBr from 'dayjs/locale/pt-br'
+import photoPlaceholder from '../../assets/photo_placeholder.svg'
 import { Tag } from '../../components/Tag'
 import { Header } from '../../components/Header'
 import { Section } from '../../components/Section'
@@ -8,50 +15,72 @@ import { FiArrowLeft } from 'react-icons/fi'
 import Star  from '../../assets/star.svg'
 import StarOutline  from '../../assets/star_outline.svg'
 import { FiClock } from 'react-icons/fi'
+import { ButtonText } from '../../components/ButtonText'
+import { useAuth } from '../../hooks/auth'
 export function Details() {
+  const [data, setData] = useState(null)	
+
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const params = useParams() 
+  const photoUrl = user.photo ? `${api.defaults.baseURL}/files/${user.photo}` : photoPlaceholder
+
+  function handleBack() {
+    navigate(-1)
+  }
+
+  useEffect(() => {
+    async function fetchMovies() {
+      const response = await api.get(`/movies/${params.id}`)
+      setData(response.data)
+    }
+    fetchMovies()
+  }, [params.id])
   return (
     <Container>
       <Header />
 
+   { 
+    data && 
       <main>
         <Content>  
-        <Link to="/">
+        <Link to="/" onClick={handleBack}>
           <FiArrowLeft />
-          <>Voltar</>
+          <ButtonText title="Voltar"/>
         </Link>
           <Title>
             <h1>
-              Interstelar
+            {data.title}
             </h1>
-            <img src={Star} alt="Star" width={20}/>
-            <img src={Star} alt="Star" width={20}/>
-            <img src={Star} alt="Star" width={20}/>
-            <img src={Star} alt="Star" width={20}/>
-            <img src={StarOutline} alt="Star" width={20}/>
           </Title>
       <Profile to="/profile">
         <div className="image">
           <img
-            src="https://github.com/marcosviniciusjau.png"
+            src={photoUrl}
             alt="Foto do usuário"
           />
-            <span>Por Marcos Vinicius</span>
+            <span>Por {user.name}</span>
             <FiClock className='clock'/>
-            <p>06/07/2024 as 14:32</p>
+            <p>{dayjs(data.created_at).locale(ptBr).format('DD [de] MMMM [de] YYYY [às] HH:mm')}</p>
         </div>  
        
       </Profile>
           <Section>
-            <Tag title="Ficcão Cientifica" />
-            <Tag title="Família" />
+            {
+              data.tags.map(tag => 
+              <Tag 
+                key={String(tag.id)}
+                title={tag.name}
+              />
+            )
+            }
           </Section>
           <p>
-          Pragas nas colheitas fizeram a civilização humana regredir para uma sociedade agrária em futuro de data desconhecida. Cooper, ex-piloto da NASA, tem uma fazenda com sua família. Murphy, a filha de dez anos de Cooper, acredita que seu quarto está assombrado por um fantasma que tenta se comunicar com ela. Pai e filha descobrem que o "fantasma" é uma inteligência desconhecida que está enviando mensagens codificadas através de radiação gravitacional, deixando coordenadas em binário que os levam até uma instalação secreta da NASA liderada pelo professor John Brand. O cientista revela que um buraco de minhoca foi aberto perto de Saturno e que ele leva a planetas que podem oferecer condições de sobrevivência para a espécie humana. As "missões Lázaro" enviadas anos antes identificaram três planetas potencialmente habitáveis orbitando o buraco negro Gargântua: Miller, Edmunds e Mann – nomeados em homenagem aos astronautas que os pesquisaram. Brand recruta Cooper para pilotar a nave espacial Endurance e recuperar os dados dos astronautas; se um dos planetas se mostrar habitável, a humanidade irá seguir para ele na instalação da NASA, que é na realidade uma enorme estação espacial. A partida de Cooper devasta Murphy. <br/>
-
-          Além de Cooper, a tripulação da Endurance é formada pela bióloga Amelia, filha de Brand; o cientista Romilly, o físico planetário Doyle, além dos robôs TARS e CASE. Eles entram no buraco de minhoca e se dirigem a Miller, porém descobrem que o planeta possui enorme dilatação gravitacional temporal por estar tão perto de Gargântua: cada hora na superfície equivale a sete anos na Terra. Eles entram em Miller e descobrem que é inóspito já que é coberto por um oceano raso e agitado por ondas enormes. Uma onda atinge a tripulação enquanto Amelia tenta recuperar os dados de Miller, matando Doyle e atrasando a partida. Ao voltarem para a Endurance, Cooper e Amelia descobrem que 23 anos se passaram.
+            {data.description}
         </p>
         </Content>
       </main>
+      }
     </Container>
   )
 }

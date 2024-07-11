@@ -39,17 +39,39 @@ export const Search = styled.div`
   padding: 24px 24px 0;
   
   width: 630px;
+  position: relative;
 `
+export const AppearSearch= styled.button`
+  display: flex;
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  position: relative;
+  width: 100%;
+  background: ${({ theme }) => theme.COLORS.BACKGROUND_800};
+  border: none;
+  border-radius: 10px;
 
+  > h1 {
+    flex: 1;
+    text-align: left;
+    font-size: 16px;
+    padding: 22px;
+    margin-bottom: 4px;
+    color: ${({ theme }) => theme.COLORS.WHITE};
+  }
+`
 export const Profile = styled(Link)`
   display: flex;
   align-items: center;
   gap: 18px;
   .image {
     display: flex;
-    
-  gap: 18px;
     flex-direction: row-reverse;
+    gap: 18px;
   }
   .image > img {
     width: 56px;
@@ -59,14 +81,13 @@ export const Profile = styled(Link)`
 
   .user {
     display: flex;
-    
+    margin-top: 10px;
     flex-direction: column;
     strong {
       font-size: 18px;
       color: ${({ theme }) => theme.COLORS.WHITE};
     }
     span {
-      margin-left: 106px;
       font-size: 14px;
       color: ${({ theme }) => theme.COLORS.GRAY_100};
     }
